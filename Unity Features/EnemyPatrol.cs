@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class EnemyPatrol : MonoBehaviour
 {
     public float speed = 2f;
@@ -10,7 +9,14 @@ public class EnemyPatrol : MonoBehaviour
     public float waitingTime = 2f;
 
     private GameObject _target;
+    private Animator _anim;
+    private Weapon _weapon;
 
+    private void Awake()
+    {
+        _anim = GetComponent<Animator>();
+        _weapon = GetComponentInChildren<Weapon>();
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -65,12 +71,19 @@ public class EnemyPatrol : MonoBehaviour
         // Here the enemy find the target. Let's set the enemy position on the target position
         Debug.Log("Alvo encontrado");
         transform.position = new Vector2(_target.transform.position.x, transform.position.y);
+        UpdateTarget();
+        _anim.SetBool("Waiting", true);
+
+        if (_weapon != null)
+        {
+            _weapon.Shoot();
+        }
 
         // Waiting
         yield return new WaitForSeconds(waitingTime); // IMPORTANT
 
         // Now the enemy will return to patrol for the target. But for the opposite direction
-        UpdateTarget();
+        _anim.SetBool("Waiting", false);
         StartCoroutine("PatrolToTarget");
     }
     /**
