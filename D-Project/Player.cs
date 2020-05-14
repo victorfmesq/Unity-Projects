@@ -9,12 +9,14 @@ public class Player : MonoBehaviour
     private Animator _anim;
 
     [SerializeField]
-    private float moveSpeed = 3f;
+    private float moveSpeed = 2f;
+
     [SerializeField]
     private float jumpForce = 5f;
     private bool isJumping;
 
-
+    [SerializeField]
+    public float damage;
 
     void Start()
     {
@@ -90,10 +92,12 @@ public class Player : MonoBehaviour
         {
             if (isJumping == false && Input.GetKeyDown("z"))
             {
-                _anim.SetBool("Run", false);
-                _anim.SetBool("Attack1", true);
                 canMove = false;
                 canAttack = false;
+                _anim.SetBool("Run", false);
+                _anim.SetBool("Attack1", true);
+
+                // dano efetivo
 
                 yield return new WaitForSeconds(0.6f);
 
@@ -103,6 +107,10 @@ public class Player : MonoBehaviour
 
                 canMove = true;
                 canAttack = true;
+            }
+            if (isJumping == true && Input.GetKeyDown("z"))
+            {
+                // ataque aereo
             }
         }
     }
