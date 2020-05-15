@@ -23,8 +23,13 @@ public class Enemy_1 : MonoBehaviour
 
     private float waitingTime = 1f;
 
+    private bool canMove;
+
+    private Player _player;
+
     public void Awake()
     {
+        _player = FindObjectOfType<Player>().GetComponent<Player>();
         _rig = GetComponent<Rigidbody2D>();
         _anim = GetComponent<Animator>();
         currentHealth = totalHealth;
@@ -32,7 +37,8 @@ public class Enemy_1 : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
-    {       
+    {
+        canMove = true;
         UpdateTarget();
         StartCoroutine(Patrol());
     }
@@ -60,31 +66,33 @@ public class Enemy_1 : MonoBehaviour
         }
 
     }
-    private bool canMove = true;
+    
     private IEnumerator Patrol()
     {
-        if (canMove == true)
+        _anim.SetBool("Walk", true);
+        while (Vector2.Distance(transform.position, _target.transform.position) > 0.1f)
         {
-            _anim.SetBool("Walk", true);
-            while (Vector2.Distance(transform.position, _target.transform.position) > 0.1f)
+            // move
+            if (canMove == false)
             {
-                // move
-                Vector2 direction = _target.transform.position - transform.position;
-
-                this.transform.Translate(direction.normalized * moveSpeed * Time.deltaTime);
-
-                yield return null;
+                yield return new WaitForSeconds(waitingTime);
             }
 
-            //this.transform.position = new Vector2(_target.transform.position.x, this.transform.position.y);
+            Vector2 direction = _target.transform.position - transform.position;
 
-            UpdateTarget();
-            _anim.SetBool("Walk", false);
+            this.transform.Translate(direction.normalized * moveSpeed * Time.deltaTime);
 
-            yield return new WaitForSeconds(waitingTime);
-
-            StartCoroutine(Patrol());
+            yield return null;
         }
+
+        //this.transform.position = new Vector2(_target.transform.position.x, this.transform.position.y);
+
+        UpdateTarget();
+        _anim.SetBool("Walk", false);
+
+        yield return new WaitForSeconds(waitingTime);
+
+        StartCoroutine(Patrol());
     }
 
     public void GetHit(float damage)
@@ -92,13 +100,32 @@ public class Enemy_1 : MonoBehaviour
         canMove = false;
         _anim.SetBool("Hit", true);
         currentHealth -= damage;
+        Debug.Log("Acertou inimigo" + "Vida atual: " + currentHealth);
         StartCoroutine(RecoveryFromTheHit());
     }
 
     private IEnumerator RecoveryFromTheHit()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.3f);
         _anim.SetBool("Hit", false);
+        canMove = true;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            canMove = false;
+            _anim.SetTrigger("Attack");
+            StartCoroutine(RecoveryFromTheAttack());
+        }
+    }
+
+    private IEnumerator RecoveryFromTheAttack()
+    {
+        yield return new WaitForSeconds(0.5f);
+        _player.GetHit(this);// empurra o player para tras
+        yield return new WaitForSeconds(0.3f);
         canMove = true;
     }
 }

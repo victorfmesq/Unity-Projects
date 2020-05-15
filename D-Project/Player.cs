@@ -31,6 +31,11 @@ public class Player : MonoBehaviour
         StartCoroutine(Attack());
     }
 
+    private void LateUpdate()
+    {
+        _anim.SetFloat("VerticalVelocity", _rig.velocity.y);
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.layer == 8)
@@ -103,7 +108,7 @@ public class Player : MonoBehaviour
 
                 _anim.SetBool("Attack1", false);
 
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(0.2f);
 
                 canMove = true;
                 canAttack = true;
@@ -113,5 +118,50 @@ public class Player : MonoBehaviour
                 // ataque aereo
             }
         }
+    }
+
+    public void GetHit(Enemy_1 enemy_1)
+    {
+        Transform enemy = enemy_1.GetComponent<Transform>();
+        canMove = false;
+        canAttack = false;
+
+        if (enemy.transform.position.x > this.transform.position.x) // Inimigo a DIREITA de Player
+        {
+            // player eh empurrado para esquerda
+            if (this.transform.eulerAngles.y == 0f) // eixo X normal (Player de FRENTE p inimigo)
+            {
+                _anim.SetBool("Hit_front", true);
+                this.transform.Translate(-0.5f, 0f, 0f); 
+            }
+            else if(this.transform.eulerAngles.y == 180f) // eixo X invertido (Player de FRENTE para o inimigo)
+            {
+                _anim.SetBool("Hit_back", true);
+                this.transform.Translate(0.5f, 0f, 0f); 
+            }
+        }
+        else if (enemy.transform.position.x < this.transform.position.x) // Inimigo a DIREITA de Player
+        {
+            // player eh empurrado para direita
+            if (this.transform.eulerAngles.y == 0f) // (Player de COSTAS para Inimigo)
+            {
+                _anim.SetBool("Hit_back", true);
+                this.transform.Translate(0.5f, 0f, 0f); 
+            }
+            else if (this.transform.eulerAngles.y == 180f) // (Player de FRENTE para o inimigo)
+            {
+                _anim.SetBool("Hit_front", true);
+                this.transform.Translate(-0.5f, 0f, 0f); 
+            }
+        }
+        StartCoroutine(RecoveryFromTheHit());
+    }
+    private IEnumerator RecoveryFromTheHit()
+    {
+        yield return new WaitForSeconds(0.5f);
+        _anim.SetBool("Hit_front", false);
+        _anim.SetBool("Hit_back", false);
+        canMove = true;
+        canAttack = true;
     }
 }
