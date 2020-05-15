@@ -100,9 +100,7 @@ public class Player : MonoBehaviour
                 canMove = false;
                 canAttack = false;
                 _anim.SetBool("Run", false);
-                _anim.SetBool("Attack1", true);
-
-                // dano efetivo
+                _anim.SetBool("Attack1", true);  // dano efetivo -> pois na animação há um evento que controla um hitbox que é ativado em determinado frame que possui um "event"
 
                 yield return new WaitForSeconds(0.6f);
 

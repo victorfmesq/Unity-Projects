@@ -106,26 +106,31 @@ public class Enemy_1 : MonoBehaviour
 
     private IEnumerator RecoveryFromTheHit()
     {
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.8f);
         _anim.SetBool("Hit", false);
         canMove = true;
     }
 
+    private bool canAttack = true;
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (canAttack)
         {
-            canMove = false;
-            _anim.SetTrigger("Attack");
-            StartCoroutine(RecoveryFromTheAttack());
+            if (collision.gameObject.CompareTag("Player"))
+            {
+                canMove = false;
+                canAttack = false;
+                _anim.SetBool("Attack", true); // animação que vai controlar o dano... 
+                StartCoroutine(RecoveryFromTheAttack());
+            }
         }
     }
 
     private IEnumerator RecoveryFromTheAttack()
-    {
-        yield return new WaitForSeconds(0.5f);
-        _player.GetHit(this);// empurra o player para tras
-        yield return new WaitForSeconds(0.3f);
+    {       
+        yield return new WaitForSeconds(0.8f);
+        _anim.SetBool("Attack", false);
         canMove = true;
+        canAttack = true;
     }
 }
