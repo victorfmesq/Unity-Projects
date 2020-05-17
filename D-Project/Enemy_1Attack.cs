@@ -13,6 +13,7 @@ public class Enemy_1Attack : MonoBehaviour
         _enemy1 = FindObjectOfType<Enemy_1>().GetComponent<Enemy_1>();
         canAttack = true;
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Player") && canAttack == true)

@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Enemy_1 : MonoBehaviour
 {
     private Rigidbody2D _rig;
+    private BoxCollider2D _boxCollider2D;
     private Animator _anim;
 
     [SerializeField]
@@ -13,6 +15,8 @@ public class Enemy_1 : MonoBehaviour
     private float totalHealth;
     [SerializeField]
     private float currentHealth;
+  
+    public float damage = 10f;
 
     private GameObject _target;
 
@@ -31,6 +35,7 @@ public class Enemy_1 : MonoBehaviour
     {
         _player = FindObjectOfType<Player>().GetComponent<Player>();
         _rig = GetComponent<Rigidbody2D>();
+        _boxCollider2D = GetComponent<BoxCollider2D>();
         _anim = GetComponent<Animator>();
         currentHealth = totalHealth;
     }
@@ -100,8 +105,14 @@ public class Enemy_1 : MonoBehaviour
         canMove = false;
         _anim.SetBool("Hit", true);
         currentHealth -= damage;
-        Debug.Log("Acertou inimigo" + "Vida atual: " + currentHealth);
-        StartCoroutine(RecoveryFromTheHit());
+        if (currentHealth < 1)
+        {
+            this.Die();
+        }
+        else
+        {
+            StartCoroutine(RecoveryFromTheHit());
+        }
     }
 
     private IEnumerator RecoveryFromTheHit()
@@ -109,6 +120,15 @@ public class Enemy_1 : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
         _anim.SetBool("Hit", false);
         canMove = true;
+    }
+    private void Die()
+    {
+        StopAllCoroutines();
+        _anim.SetBool("Hit", false);
+        _anim.SetBool("Dead", true);
+        _anim.SetBool("Walk", false);
+        Destroy(this._rig);
+        Destroy(this._boxCollider2D);
     }
 
     private bool canAttack = true;
@@ -133,4 +153,5 @@ public class Enemy_1 : MonoBehaviour
         canMove = true;
         canAttack = true;
     }
+
 }

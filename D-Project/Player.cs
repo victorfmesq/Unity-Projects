@@ -1,12 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 using UnityEngine.Video;
 
 public class Player : MonoBehaviour
 {
     private Rigidbody2D _rig;
     private Animator _anim;
+    private BoxCollider2D _boxCollider2D;
+    private CircleCollider2D _circleCollider2D;
 
     [SerializeField]
     private float moveSpeed = 2f;
@@ -18,10 +21,16 @@ public class Player : MonoBehaviour
     [SerializeField]
     public float damage;
 
+    private float totalHealth = 30f;
+    private float currentHealth;
+
     void Start()
     {
         _rig = GetComponent<Rigidbody2D>();
         _anim = GetComponent<Animator>();
+        _boxCollider2D = GetComponent<BoxCollider2D>();
+        _circleCollider2D = GetComponent<CircleCollider2D>();
+        currentHealth = totalHealth;
     }
 
     void Update()
@@ -124,35 +133,47 @@ public class Player : MonoBehaviour
         canMove = false;
         canAttack = false;
 
-        if (enemy.transform.position.x > this.transform.position.x) // Inimigo a DIREITA de Player
+        currentHealth -= enemy_1.damage;
+        Debug.Log("Vida atual é : " + this.currentHealth);
+
+        if (currentHealth < 1)
         {
-            // player eh empurrado para esquerda
-            if (this.transform.eulerAngles.y == 0f) // eixo X normal (Player de FRENTE p inimigo)
-            {
-                _anim.SetBool("Hit_front", true);
-                this.transform.Translate(-0.5f, 0f, 0f); 
-            }
-            else if(this.transform.eulerAngles.y == 180f) // eixo X invertido (Player de FRENTE para o inimigo)
-            {
-                _anim.SetBool("Hit_back", true);
-                this.transform.Translate(0.5f, 0f, 0f); 
-            }
+            this.Die();
+            Debug.Log("E morreu");
         }
-        else if (enemy.transform.position.x < this.transform.position.x) // Inimigo a DIREITA de Player
+        else
         {
-            // player eh empurrado para direita
-            if (this.transform.eulerAngles.y == 0f) // (Player de COSTAS para Inimigo)
+            if (enemy.transform.position.x > this.transform.position.x) // Inimigo a DIREITA de Player
             {
-                _anim.SetBool("Hit_back", true);
-                this.transform.Translate(0.5f, 0f, 0f); 
+                // player eh empurrado para esquerda
+                if (this.transform.eulerAngles.y == 0f) // eixo X normal (Player de FRENTE p inimigo)
+                {
+                    _anim.SetBool("Hit_front", true);
+                    this.transform.Translate(-0.5f, 0f, 0f); 
+                }
+                else if(this.transform.eulerAngles.y == 180f) // eixo X invertido (Player de FRENTE para o inimigo)
+                {
+                    _anim.SetBool("Hit_back", true);
+                    this.transform.Translate(0.5f, 0f, 0f); 
+                }
             }
-            else if (this.transform.eulerAngles.y == 180f) // (Player de FRENTE para o inimigo)
+            else if (enemy.transform.position.x < this.transform.position.x) // Inimigo a DIREITA de Player
             {
-                _anim.SetBool("Hit_front", true);
-                this.transform.Translate(-0.5f, 0f, 0f); 
+                // player eh empurrado para direita
+                if (this.transform.eulerAngles.y == 0f) // (Player de COSTAS para Inimigo)
+                {
+                    _anim.SetBool("Hit_back", true);
+                    this.transform.Translate(0.5f, 0f, 0f); 
+                }
+                else if (this.transform.eulerAngles.y == 180f) // (Player de FRENTE para o inimigo)
+                {
+                    _anim.SetBool("Hit_front", true);
+                    this.transform.Translate(-0.5f, 0f, 0f); 
+                }
+
             }
+            StartCoroutine(RecoveryFromTheHit());
         }
-        StartCoroutine(RecoveryFromTheHit());
     }
     private IEnumerator RecoveryFromTheHit()
     {
@@ -161,5 +182,14 @@ public class Player : MonoBehaviour
         _anim.SetBool("Hit_back", false);
         canMove = true;
         canAttack = true;
+    }
+    private void Die()
+    {
+        canMove = false;
+        _anim.SetTrigger("Die");
+        Destroy(this._rig);
+        Destroy(this._boxCollider2D);
+        Destroy(this._circleCollider2D);
+        this.transform.Translate(0f, 0.16f, 0f);
     }
 }
